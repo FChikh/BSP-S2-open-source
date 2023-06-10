@@ -1,0 +1,66 @@
+sourceUrl = "git@github.com:FChikh/sync_repos_public.git" # public
+destinationUrl = "git@github.com:FChikh/sync_repos_private.git" # private
+
+core.workflow(
+    name = "pr_to_private",
+    origin = git.github_pr_origin(
+      url = sourceUrl, #public
+    ),
+
+    destination = git.github_pr_destination(
+      url = destinationUrl, #private
+      destination_ref = "master", 
+      pr_branch = "from_external_${CONTEXT_REFERENCE}",
+      title = "pr from external ${CONTEXT_REFERENCE} ",
+      body = "this is a sample pull request",
+      integrates = [],
+    ),
+
+    origin_files = glob(["**"]),
+    
+    destination_files = glob(["**"], exclude = [".github/**"]),
+
+    authoring = authoring.pass_thru("Copybara <copybara@example.com>"),
+    transformations = [
+        metadata.restore_author("ORIGINAL_AUTHOR", search_all_changes = True),
+        metadata.expose_label("COPYBARA_INTEGRATE_REVIEW"),
+    ],
+)
+
+core.workflow(
+    name = "push_to_public",            
+    origin = git.origin(
+        url = destinationUrl, # private
+        ref = "master",
+    ),
+    destination = git.github_pr_destination(
+        url = sourceUrl, # public
+        destination_ref = "master",
+        pr_branch = "from_private",
+        title = "pr from private repo",
+        body = "this is a sample pull request from private repo",
+        integrates = [],
+    ),
+    origin_files = glob(["**"], exclude = [".github/**"]),  # pay attention!
+    authoring = authoring.pass_thru("Copybara <copybara@example.com>"),
+    description = "Fetching from private to public",
+    transformations = [],
+)
+
+
+core.workflow(
+    name = "push_to_public_master",            
+    origin = git.origin(
+        url = destinationUrl, # private
+        ref = "master",
+    ),
+    destination = git.destination(
+        url = sourceUrl, # public
+        fetch = "master",
+        push = "master",
+    ),
+    origin_files = glob(["**"], exclude = [".github/**"]),  # pay attention!
+    authoring = authoring.pass_thru("Copybara <copybara@example.com>"),
+    description = "Fetching from private to public",
+    transformations = [],
+)

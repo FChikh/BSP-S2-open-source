@@ -1,0 +1,41 @@
+name: Sync Private to Public
+on:
+  workflow_dispatch:
+jobs:
+  move-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - uses: de-vri-es/setup-git-credentials@v2
+        with:
+          credentials: ${{secrets.GIT_CREDENTIALS}}
+      
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'oracle'
+      
+      - name: Install Copybara
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk
+          sudo apt-get install -y git-core
+          sudo apt install apt-transport-https curl gnupg -y
+          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+          sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+          sudo apt update && sudo apt install bazel
+          git clone https://github.com/google/copybara.git
+          cd copybara
+          bazel build //java/com/google/copybara:copybara_deploy.jar  
+      
+      - name: Run Copybara
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+        run: |
+          git config --global user.name "Copybara"
+          git config --global user.email copybara@copybara.com
+          java -jar copybara/bazel-bin/java/com/google/copybara/copybara_deploy.jar .github/workflows/copy.bara.sky push_to_public_master --force
