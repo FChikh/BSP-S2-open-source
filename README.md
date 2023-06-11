@@ -2,7 +2,7 @@
 
 This is the source code of technical deliverable of BSP-S2 project by Fedor Chikhachev.
 
-All files with the code are contained inside `.github/workflows` folder. There are several CI scripts, which performs a synchronisation workflow between 2 repositories, private and public. 
+All files with the code are contained inside `.github/workflows` folder. There are several CI scripts, which performs a synchronisation workflow between 2 repositories, private and public. `biginteger` folder contains a C++ library, which simulates an existing project with the corresponding `tests.yml` workflow in `.github/workflows`.
 
 For the moment the code available here is working only for the specific pair of repositories ([sync-repos-public](https://github.com/FChikh/sync_repos_public) and [sync-repos-private](https://github.com/FChikh/sync_repos_private)), as some parts of code are related concretely to these repositories (e.g. their source addresses and API tokens with corresponding access rights). The access to these repositories is personal, as they contain some private information. So it is unavailable for the moment to probide a live demonstration for everybody. To see this software in action, please refer to video demonstrations in ST-VIDEO deliverable.
 
